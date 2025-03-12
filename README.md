@@ -1,16 +1,25 @@
 # FileSync-Guardian
 
+[![PyPI version](https://img.shields.io/pypi/v/filesync-guardian.svg)](https://pypi.org/project/filesync-guardian/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/filesync-guardian.svg)](https://pypi.org/project/filesync-guardian/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A robust file synchronization and backup library for Python with versioning, encryption, and smart delta transfers.
 
-## Features
+## Overview
 
-- 🔄 **Smart Synchronization**: Intelligently sync files between directories with efficient delta transfers
-- 📚 **Versioning System**: Keep historical versions of files with easy rollback
-- 🔒 **Encryption Layer**: Integrated file encryption for sensitive data
-- ⏱️ **Progress Reporting**: Real-time progress tracking with ETA and speed estimates
-- 🔍 **Integrity Verification**: Checksum validation ensures files transfer correctly
-- 🧰 **Flexible Filters**: Include/exclude patterns for precise control
-- 📊 **Detailed Logging**: Comprehensive logging of all operations
+FileSync-Guardian provides a powerful yet easy-to-use solution for file synchronization and backup in Python applications. Unlike simple file copying functions, FileSync-Guardian offers intelligent synchronization, versioning history, encryption, and detailed progress reporting.
+
+## Key Features
+
+- 🔄 **Smart Synchronization**: Only transfers files that have changed, saving time and bandwidth
+- 📚 **Version History**: Automatically keeps previous versions of modified files for easy recovery
+- 🔒 **Built-in Encryption**: Securely encrypt sensitive files during transfer and storage
+- 🔍 **Integrity Verification**: Ensures files are transferred correctly with checksum validation
+- 🧰 **Flexible Filtering**: Include or exclude files using powerful pattern matching
+- 📊 **Progress Tracking**: Real-time progress reporting with ETA estimation
+- 🔀 **Bidirectional Sync**: Support for two-way synchronization between directories
+- 📝 **Comprehensive Logging**: Detailed logs of all operations for troubleshooting
 
 ## Installation
 
@@ -25,14 +34,14 @@ pip install filesync-guardian
 ```python
 from filesync_guardian import SyncManager
 
-# Initialize a SyncManager with source and target directories
-sync_manager = SyncManager(
+# Create a sync manager
+sync = SyncManager(
     source_path="/path/to/source",
-    target_path="/path/to/target"
+    target_path="/path/to/backup"
 )
 
 # Start synchronization
-sync_manager.start()
+sync.start()
 ```
 
 ### With Progress Reporting
@@ -40,30 +49,18 @@ sync_manager.start()
 ```python
 from filesync_guardian import SyncManager
 
-# Initialize the SyncManager
-sync_manager = SyncManager(
+# Create a sync manager
+sync = SyncManager(
     source_path="/path/to/source",
-    target_path="/path/to/target"
+    target_path="/path/to/backup"
 )
 
 # Define progress callback
 def on_progress(progress):
-    print(f"Sync progress: {progress:.1f}%")
+    print(f"Progress: {progress:.1f}%")
 
-# Define completion callback
-def on_complete():
-    print("Synchronization completed successfully!")
-
-# Define error callback
-def on_error(exception):
-    print(f"Synchronization failed: {exception}")
-
-# Start synchronization with callbacks
-sync_manager.start(
-    on_progress=on_progress,
-    on_complete=on_complete,
-    on_error=on_error
-)
+# Start synchronization with progress reporting
+sync.start(on_progress=on_progress)
 ```
 
 ### With Encryption
@@ -71,16 +68,16 @@ sync_manager.start(
 ```python
 from filesync_guardian import SyncManager
 
-# Initialize with encryption enabled
-sync_manager = SyncManager(
+# Create a sync manager with encryption
+sync = SyncManager(
     source_path="/path/to/source",
-    target_path="/path/to/target",
+    target_path="/path/to/backup",
     encryption=True,
-    encryption_key="my-secure-password"  # Optional, auto-generated if not provided
+    encryption_key="your-secure-password"  # Optional - auto-generated if not provided
 )
 
 # Start synchronization
-sync_manager.start()
+sync.start()
 ```
 
 ### With File Versioning
@@ -88,139 +85,193 @@ sync_manager.start()
 ```python
 from filesync_guardian import SyncManager
 
-# Initialize with versioning enabled
-sync_manager = SyncManager(
+# Create a sync manager with versioning
+sync = SyncManager(
     source_path="/path/to/source",
-    target_path="/path/to/target",
+    target_path="/path/to/backup",
     versioning=True,
-    max_versions=10  # Keep up to 10 versions of each file
+    max_versions=5  # Keep up to 5 versions of each file
 )
 
 # Start synchronization
-sync_manager.start()
+sync.start()
 
-# Restore a previous version
-sync_manager.restore_version("/path/to/file.txt")
+# Later, restore a previous version of a file
+sync.restore_version("/path/to/backup/important_file.txt")
 ```
 
-### With Filters
+### With File Filtering
 
 ```python
 from filesync_guardian import SyncManager
 
-# Initialize with file filters
-sync_manager = SyncManager(
+# Create a sync manager with filters
+sync = SyncManager(
     source_path="/path/to/source",
-    target_path="/path/to/target",
+    target_path="/path/to/backup",
     filters=[
         "*.txt",           # Include all text files
+        "*.docx",          # Include all Word documents
         "-:*.tmp",         # Exclude temporary files
-        "+:important/*.log" # Include log files in the important directory
+        "-:*.log",         # Exclude log files
+        "+:logs/errors.log"  # But include this specific log file
     ]
 )
 
 # Start synchronization
-sync_manager.start()
+sync.start()
 ```
 
-## Advanced Usage
+## Real-World Use Cases
 
-### Bidirectional Synchronization
+### Application Data Backup
+
+```python
+from filesync_guardian import SyncManager
+import os
+
+# Get user's home directory and app data
+home_dir = os.path.expanduser("~")
+app_data = os.path.join(home_dir, "AppData", "MyApplication")
+backup_dir = os.path.join(home_dir, "Backups", "MyApplication")
+
+# Create sync manager with versioning for data protection
+sync = SyncManager(
+    source_path=app_data,
+    target_path=backup_dir,
+    versioning=True,
+    filters=["*", "-:cache/*", "-:tmp/*"]  # Exclude cache and tmp directories
+)
+
+# Backup application data
+sync.start()
+```
+
+### Secure Document Synchronization
 
 ```python
 from filesync_guardian import SyncManager
 
-# Initialize with bidirectional sync
-sync_manager = SyncManager(
-    source_path="/path/to/device1",
-    target_path="/path/to/device2",
-    bidirectional=True  # Changes from both sides are synchronized
+# Create sync manager for sensitive documents with encryption
+sync = SyncManager(
+    source_path="/path/to/sensitive_documents",
+    target_path="/path/to/encrypted_backup",
+    encryption=True,
+    encryption_key="strong-password-here",
+    filters=["*.pdf", "*.docx", "*.xlsx"]  # Only sync documents
+)
+
+# Start secure synchronization
+sync.start()
+```
+
+### Development Environment Sync
+
+```python
+from filesync_guardian import SyncManager
+
+# Sync project files between environments
+sync = SyncManager(
+    source_path="/path/to/project",
+    target_path="/path/to/backup_project",
+    bidirectional=True,  # Changes from both sides are synchronized
+    filters=["*", "-:node_modules/*", "-:venv/*", "-:*.pyc", "-:.git/*"]  # Exclude development artifacts
 )
 
 # Start synchronization
-sync_manager.start()
+sync.start()
 ```
 
-### File Monitoring
+## Advanced Usage
+
+### File System Monitoring
 
 ```python
 from filesync_guardian.file_system.watcher import FileWatcher
 
-# Create a file watcher
+# Create a file watcher to monitor changes
 watcher = FileWatcher("/path/to/watch", recursive=True)
 
-# Define event handlers
-def on_file_created(path):
+# Set up event handlers
+def on_created(path):
     print(f"File created: {path}")
 
-def on_file_modified(path):
+def on_modified(path):
     print(f"File modified: {path}")
 
-def on_file_deleted(path):
+def on_deleted(path):
     print(f"File deleted: {path}")
 
-# Set up callbacks
+# Register callbacks
 watcher.set_callbacks(
-    on_created=on_file_created,
-    on_modified=on_file_modified,
-    on_deleted=on_file_deleted
+    on_created=on_created,
+    on_modified=on_modified,
+    on_deleted=on_deleted
 )
 
 # Start watching
 watcher.start()
 
-# ... Later when done ...
+# ... do something else ...
+
+# When done
 watcher.stop()
 ```
 
-### Checking Sync Status
+### Manual Pattern Filtering
 
 ```python
-from filesync_guardian import SyncManager
+from filesync_guardian.filters.pattern import Pattern, PatternSet
 
-# Initialize the SyncManager
-sync_manager = SyncManager(
-    source_path="/path/to/source",
-    target_path="/path/to/target"
-)
+# Create individual patterns
+include_txt = Pattern("*.txt")
+exclude_temp = Pattern("-:*.tmp")
 
-# Start sync in the background
-sync_manager.start()
+# Check if a file matches a pattern
+print(include_txt.matches("document.txt"))  # True
+print(exclude_temp.matches("data.tmp"))     # True
+print(exclude_temp.is_include())            # False
 
-# Check status
-status = sync_manager.get_status()
-print(f"Running: {status['is_running']}")
-print(f"Progress: {status['progress']}%")
-print(f"Current stage: {status['stage']}")
-print(f"Last error: {status['last_error']}")
+# Create a pattern set
+pattern_set = PatternSet([
+    "*.txt",
+    "*.docx",
+    "-:*.tmp"
+])
+
+# Filter a list of files
+files = ["doc1.txt", "doc2.docx", "data.tmp", "image.jpg"]
+filtered = pattern_set.filter_paths(files)
+print(filtered)  # ['doc1.txt', 'doc2.docx']
 ```
 
 ## API Reference
 
 ### SyncManager
 
-The main class for managing file synchronization operations.
+Main class for coordinating file synchronization operations.
 
 ```python
 SyncManager(
     source_path,              # Source directory path
     target_path,              # Target directory path
     encryption=False,         # Whether to enable encryption
-    encryption_key=None,      # Custom encryption key
+    encryption_key=None,      # Custom encryption key (generated if None)
     versioning=False,         # Whether to keep previous versions
-    max_versions=5,           # Maximum versions to keep per file
+    max_versions=5,           # Maximum number of versions to keep per file
     filters=None,             # List of include/exclude patterns
-    bidirectional=False,      # Whether sync should be two-way
+    bidirectional=False,      # Whether synchronization should be two-way
     verify_integrity=True,    # Whether to verify file integrity
     log_level=logging.INFO    # Logging level
 )
 ```
 
 **Methods:**
+
 - `start(on_progress=None, on_complete=None, on_error=None)`: Start synchronization
 - `stop()`: Stop the current synchronization
-- `get_status()`: Get the current status
-- `restore_version(file_path, version_id=None)`: Restore a previous version
+- `get_status()`: Get the current status of synchronization
+- `restore_version(file_path, version_id=None)`: Restore a previous version of a file
 
 ### FileWatcher
 
@@ -230,41 +281,48 @@ Monitors a directory for file changes.
 FileWatcher(
     path,                   # Directory path to watch
     recursive=True,         # Whether to watch subdirectories
-    polling_interval=1.0    # Seconds between checks
+    polling_interval=1.0    # Seconds between polling checks
 )
 ```
 
 **Methods:**
-- `start()`: Start watching for changes
+
+- `start()`: Start watching for file changes
 - `stop()`: Stop watching
 - `set_callbacks(on_created=None, on_modified=None, on_deleted=None)`: Set event handlers
 
-### Pattern
+### Pattern and PatternSet
 
-File pattern matcher for include/exclude rules.
+File pattern matching for filtering.
 
 ```python
-Pattern(pattern_string)  # Pattern string with optional +/- prefix
+# Individual pattern
+pattern = Pattern("*.txt")      # Include pattern
+pattern = Pattern("-:*.tmp")    # Exclude pattern
+
+# Pattern set
+patterns = PatternSet([
+    "*.txt",
+    "-:*.tmp"
+])
 ```
 
 **Pattern Syntax:**
-- `*.txt`: Include all .txt files
-- `-:*.tmp`: Exclude all .tmp files
-- `+:dir/*.log`: Include all .log files in dir/
+
+- Simple glob patterns: `*.txt`, `data.*`, `document-?.doc`
+- Prefixed patterns:
+  - `+:pattern` or just `pattern`: Include files matching the pattern
+  - `-:pattern`: Exclude files matching the pattern
 
 ## Requirements
 
-- Python 3.7 or higher
+- Python 3.7+
 - cryptography >= 36.0.0
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## License
 
-## Credits
-Developed by Biswanath Roul
+This project is licensed under the MIT License - see the LICENSE file for details.
